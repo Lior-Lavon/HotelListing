@@ -36,7 +36,8 @@ namespace HotelListing.Repository
         public async Task<T> Get(Expression<Func<T, bool>> expression, List<string> includes = null)
         {
             IQueryable<T> query = _db; // _db is a context t Country or Hotel based on what passed in
-            //loot and add additional properties if available
+            
+            //add additional properties 
             if(includes != null)
             {
                 foreach(var property in includes)
@@ -60,7 +61,7 @@ namespace HotelListing.Repository
                 query = query.Where(expression);
             }
 
-            //loot and add additional properties if available
+            //add additional properties like depencencies
             if (includes != null)
             {
                 foreach (var property in includes)

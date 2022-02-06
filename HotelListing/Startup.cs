@@ -2,9 +2,11 @@ using HotelListing.Configurations;
 using HotelListing.Data;
 using HotelListing.IRepository;
 using HotelListing.Repository;
+using HotelListing.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +39,12 @@ namespace HotelListing
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"));
             });
 
+            services.AddAuthentication();
+            services.ConfigureIdentity();
+
+            // Setting JWT validation
+            services.ConfigureJWT(Configuration);
+
             services.AddCors(o =>
             {
                 o.AddPolicy("CorsPolicy_AllowAll", builder =>
@@ -52,15 +60,51 @@ namespace HotelListing
 
             // define the controller at startup
             services.AddTransient<IUnitOfWork, UnitOfWork > ();
+            // register the interface for auth
+            services.AddScoped<IAuthManager, AuthManager>();
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelListing", Version = "v1" });
-            });
+            AddSwaggerDoc(services);
 
             services.AddControllers().AddNewtonsoftJson(op => 
                 op.SerializerSettings.ReferenceLoopHandling = 
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+        }
+
+        private void AddSwaggerDoc(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                // add authentication section.
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = @"JWT Auth header using the Bearer schema. 
+                                    Enter 'Bearer' [space] and then your token. 
+                                    Example: 'Bearer 123sfsdf3fe",
+                    Name = "Authorization", 
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme {
+                            Reference = new OpenApiReference{
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Scheme = "AOuth2",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string> ()
+                    }
+                });
+
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelListing", Version = "v1" });
+            });
 
         }
 
@@ -80,6 +124,7 @@ namespace HotelListing
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

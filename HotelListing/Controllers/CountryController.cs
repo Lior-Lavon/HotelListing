@@ -56,7 +56,8 @@ namespace HotelListing.Controllers
                 Country country = await _unitOfWork.Countries.Get(q => q.Id==id, new List<string>() { "Hotels" });
                 CountryDTO countryDTO = _mapper.Map<CountryDTO>(country);
                 return Ok(countryDTO);
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Something went wrong in the {nameof(GetCountry)}");
                 //return StatusCode(500, "Internal server error !");

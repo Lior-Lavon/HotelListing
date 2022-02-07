@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HotelListing.Data
 {
@@ -16,5 +17,6 @@ namespace HotelListing.Data
         public int CountryId { get; set; }
 
         public Country Country { get; set; }
+
     }
 }

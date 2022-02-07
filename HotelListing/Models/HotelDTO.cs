@@ -1,5 +1,4 @@
-﻿using HotelListing.Data;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace HotelListing.Models
 {
@@ -19,6 +18,11 @@ namespace HotelListing.Models
 
         [Required]
         public int CountryId { get; set; }
+
+    }
+
+    public class UpdateHotelDTO : CreateHotelDTO
+    {
 
     }
 

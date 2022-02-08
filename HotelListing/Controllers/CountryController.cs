@@ -12,7 +12,10 @@ using System.Threading.Tasks;
 
 namespace HotelListing.Controllers
 {
+    //    [ApiVersion("1.0")]
+    //[Route("api/{v:apiversion}/[controller]")]
     [Route("api/[controller]")]
+
     [ApiController]
     public class CountryController : ControllerBase
     {
@@ -30,6 +33,7 @@ namespace HotelListing.Controllers
         }
 
         [HttpGet]
+//        [ResponseCache(CacheProfileName = "120SecondsDuration")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountries(

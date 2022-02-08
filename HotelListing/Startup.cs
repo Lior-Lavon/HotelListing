@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using HotelListing.Configurations;
 using HotelListing.Data;
 using HotelListing.IRepository;
@@ -39,7 +40,20 @@ namespace HotelListing
                 options.UseSqlServer(Configuration.GetConnectionString("sqlConnection"));
             });
 
+
+            services.AddMemoryCache();
+
+            // configure caching
+            //services.AddResponseCaching(); // was moved to ConfigureHttpCacheHeaders
+            services.ConfigureHttpCacheHeaders();
+
+            services.ConfigureRateLimiting();
+            services.AddHttpContextAccessor();
+
+            // configure auth
             services.AddAuthentication();
+
+            // configure Identity
             services.ConfigureIdentity();
 
             // Setting JWT validation
@@ -65,10 +79,18 @@ namespace HotelListing
 
             AddSwaggerDoc(services);
 
-            services.AddControllers().AddNewtonsoftJson(op => 
+            services.AddControllers(config =>
+            {
+                config.CacheProfiles.Add("120SecondsDuration", new CacheProfile
+                {
+                    Duration = 120
+                });
+            }).AddNewtonsoftJson(op => 
                 op.SerializerSettings.ReferenceLoopHandling = 
                     Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
+            // register API Version support
+            services.ConfigureVersioning();
         }
 
         private void AddSwaggerDoc(IServiceCollection services)
@@ -109,6 +131,7 @@ namespace HotelListing
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // Register middleware 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -119,9 +142,13 @@ namespace HotelListing
             }
 
             app.UseHttpsRedirection();
+            app.UseHttpCacheHeaders();
+
+            app.UseIpRateLimiting();
 
             app.UseCors("CorsPolicy_AllowAll");
 
+            app.UseResponseCaching(); // register the middleare
             app.UseRouting();
 
             app.UseAuthentication();

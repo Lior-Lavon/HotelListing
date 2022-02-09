@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
+using HotelListing.Core.DTOs;
+using HotelListing.Core.Models;
+using HotelListing.Core.Repository;
 using HotelListing.Data;
-using HotelListing.IRepository;
-using HotelListing.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ namespace HotelListing.Controllers
         {
             try
             {
-                var hotels = await _unitOfWork.Hotels.GetAll(requestParams);
+                var hotels = await _unitOfWork.Hotels.GetAll(); //_unitOfWork.Hotels.GetAll(requestParams);
                 var result = _mapper.Map<List<HotelDTO>>(hotels);
                 return Ok(result);
             }

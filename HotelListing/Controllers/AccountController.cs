@@ -1,17 +1,17 @@
 ﻿using AutoMapper;
+using HotelListing.Core.Auth;
+using HotelListing.Core.DTOs;
+using HotelListing.Core.Models;
 using HotelListing.Data;
-using HotelListing.Models;
-using HotelListing.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace HotelListing.Controllers
 {
-    
+
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
@@ -86,13 +86,26 @@ namespace HotelListing.Controllers
                 if (!await _authManager.ValidateUser(loginUserDTO))
                     return Unauthorized(loginUserDTO); // 401
 
-                return Accepted(new { Token = await _authManager.CreateToken() }); // 202
+                return Accepted(new TokenRequest { Token = await _authManager.CreateToken(),  // add token
+                                      RefreshToken = await _authManager.CreateRefreshToken() }); // add refresh token
             }
             catch (System.Exception ex)
             {
                 _logger.LogError(ex, $"Something went wrong in the {nameof(Login)}");
                 return StatusCode(500, "Internal Server Error !");
             }
+        }
+
+        [HttpPost]
+        [Route("refreshtoken")]
+        public async Task<IActionResult> RefreshToken([FromBody] TokenRequest request)
+        {
+            var tokenRequest = await _authManager.VerifyRefreshToken(request);
+            if(tokenRequest == null)
+            {
+                return Unauthorized();
+            }
+            return Ok(tokenRequest);
         }
 
     }

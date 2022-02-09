@@ -59,7 +59,9 @@ namespace HotelListing.Core.Auth
         {
             var claims = new List<Claim>()
                     {
-                        new Claim(ClaimTypes.NameIdentifier, _user.Email)
+                        new Claim(ClaimTypes.NameIdentifier, _user.Email),
+                        new Claim(ClaimTypes.Name, _user.FirstName),
+                        new Claim(ClaimTypes.Surname, _user.LastName)
                     };
 
             var roles = await _userManager.GetRolesAsync(_user);

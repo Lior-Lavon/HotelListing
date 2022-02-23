@@ -40,6 +40,7 @@ namespace HotelListing.Controllers
         public async Task<IActionResult> GetCountries(
             [FromQuery] RequestParams requestParams)
         {
+            _logger.LogInformation("GetCountries API was called !!!");
             try
             {
                 var countries = await _unitOfWork.Countries.GetAll(requestParams);
@@ -58,6 +59,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetCountry(int id)
         {
+            _logger.LogInformation("GetCountry API was called !!!");
             try
             {
                 Country country = await _unitOfWork.Countries.Get(q => q.Id==id, new List<string>() { "Hotels" });
@@ -73,7 +75,6 @@ namespace HotelListing.Controllers
         }
 
         [Authorize(Roles = "Administrator")]
-        [Authorize]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -81,6 +82,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateCountry([FromBody] CreateCountryDTO countryDTO)
         {
+            _logger.LogInformation("CreateCountry API was called !!!");
             if (!ModelState.IsValid)
             {
                 _logger.LogInformation($"Invalid POST attemt in {nameof(CreateCountry)}");
@@ -101,7 +103,7 @@ namespace HotelListing.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrator")]
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -109,6 +111,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCountry(int id, [FromBody] UpdateCountryDTO countryDTO)
         {
+            _logger.LogInformation("UpdateCountry API was called !!!");
             if (!ModelState.IsValid || id < 1)
             {
                 _logger.LogError($"Invalid update param at {nameof(UpdateCountry)}");
@@ -145,6 +148,7 @@ namespace HotelListing.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteCountry(int id)
         {
+            _logger.LogInformation("DeleteCountry API was called !!!");
             if (id < 1)
             {
                 _logger.LogError($"Invalid DELETE attemp");

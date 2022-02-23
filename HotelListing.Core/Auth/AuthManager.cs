@@ -11,22 +11,25 @@ using System.Text;
 using HotelListing.Core.DTOs;
 using HotelListing.Core.Models;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace HotelListing.Core.Auth
 {
     public class AuthManager : IAuthManager
     {
-        private readonly Microsoft.AspNetCore.Identity.UserManager<ApiUser> _userManager;
+        private readonly UserManager<ApiUser> _userManager;
         private readonly IConfiguration _configuration;
         private ApiUser _user;
+        private readonly ILogger<AuthManager> _logger;
 
         private const string TokenProfile = "HotelListingApi";
         private const string RefreshToken = "RefreshToken";
 
-        public AuthManager(Microsoft.AspNetCore.Identity.UserManager<ApiUser> userManager, IConfiguration configuration)
+        public AuthManager(UserManager<ApiUser> userManager, IConfiguration configuration, ILogger<AuthManager> logger)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<bool> ValidateUser(LoginUserDTO userDto)
@@ -51,7 +54,11 @@ namespace HotelListing.Core.Auth
 
         private SigningCredentials GetSigningCredentials()
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            string hotel_key = Environment.GetEnvironmentVariable("HOTEL_KEY");
+            if (hotel_key == null)
+                hotel_key = _configuration["Jwt:Key"];
+            _logger.LogInformation($"HOTEL_KEY : {hotel_key}");
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(hotel_key));
             return new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         }
 

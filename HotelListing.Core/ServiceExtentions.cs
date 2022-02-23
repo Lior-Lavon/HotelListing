@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -32,6 +33,10 @@ namespace HotelListing.Core
         //Configure JWT from Env Variable
         public static void ConfigureJWT(this IServiceCollection services, IConfiguration config)
         {
+            string hotel_key = Environment.GetEnvironmentVariable("HOTEL_KEY");
+            if (hotel_key == null)
+                hotel_key = config["Jwt:Key"];
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -43,7 +48,7 @@ namespace HotelListing.Core
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = config["Jwt:Issuer"], // from appsettings
                         ValidAudience = config["Jwt:Audience"], // from appsettings
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(hotel_key))
                     };
                 });
         }
@@ -90,7 +95,7 @@ namespace HotelListing.Core
             services.AddHttpCacheHeaders(
                 (experationOpt) =>
                 {
-                    experationOpt.MaxAge = 120;
+                    experationOpt.MaxAge = 10; // seconds
                     experationOpt.CacheLocation = CacheLocation.Private;
                 },
                 (validationOpt) =>
@@ -105,10 +110,10 @@ namespace HotelListing.Core
         {
             var rateLimitRules = new List<RateLimitRule>
             {
-                new RateLimitRule // this rule limit to 1 call/sec
+                new RateLimitRule // this rule limit to 10 call / 5 sec
                 {
                     Endpoint ="*",  // apply to any source
-                    Limit =1, 
+                    Limit =10, // calles
                     Period ="5s"
                 } // can have multiple rules
             };
